@@ -164,9 +164,11 @@ export const Navbar: React.FC = () => {
             <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-slate-800">
               Products
             </Link>
+            {/* Preserved mobile Failure Simulator link
             <Link to="/admin/simulator" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-blue-600">
               Failure Simulator
             </Link>
+            */}
           </div>
         )}
       </div>

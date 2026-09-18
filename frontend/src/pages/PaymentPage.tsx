@@ -113,44 +113,27 @@ export const PaymentPage: React.FC = () => {
           <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Select Payment Method</h1>
           <p className="text-xs text-slate-500 mb-8">Order Reference: <span className="font-bold text-slate-800">{activeOrderId}</span></p>
 
-          {/* Backend Failure Display Alert Banner */}
+          {/* Clean User-Facing Payment Failure Alert Banner */}
           {errorDetails && (
-            <div className="mb-8 p-6 rounded-3xl bg-red-50 border-2 border-red-200 text-red-900 shadow-md animate-shake">
-              <div className="flex items-start gap-4">
+            <div className="mb-8 p-6 rounded-3xl bg-red-50 border border-red-200 text-red-900 shadow-sm animate-shake">
+              <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-extrabold text-red-900">Payment Authorization Failed</h3>
-                    <span className="px-3 py-1 rounded-full bg-red-200 text-red-800 text-[10px] font-bold tracking-wider uppercase">
-                      {errorDetails.error_code}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-red-700 mt-2">
-                    {errorDetails.error_message}
-                  </p>
-                  
-                  <div className="mt-4 pt-4 border-t border-red-200/80 grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono text-red-800">
-                    <div>
-                      <span className="block text-[9px] text-red-500 font-bold uppercase">Request ID</span>
-                      <span>{errorDetails.request_id || 'REQ-SYS-ERR'}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[9px] text-red-500 font-bold uppercase">Event ID</span>
-                      <span>{errorDetails.event_id || 'EVT-PAY-FAIL'}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[9px] text-red-500 font-bold uppercase">Logged to DB</span>
-                      <span className="text-green-700 font-bold">YES (Operational Log)</span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-red-600 mt-3 italic">
-                    Note: A structured operational event has been created in the database for AI incident investigation.
+                  <h3 className="text-base font-extrabold text-red-900">Payment Authorization Failed</h3>
+                  <p className="text-xs font-semibold text-red-700 mt-1">
+                    Payment request could not be completed. Please try again or choose another payment method.
                   </p>
                 </div>
               </div>
+
+              {/* Preserved internal operational metadata for AI Incident Investigation (Hidden from UI view)
+                Request ID: {errorDetails.request_id || 'REQ-SYS-ERR'}
+                Event ID: {errorDetails.event_id || 'EVT-PAY-FAIL'}
+                Error Code: {errorDetails.error_code}
+                Logged to DB: Operational Log (YES)
+              */}
             </div>
           )}
 
@@ -295,7 +278,8 @@ export const PaymentPage: React.FC = () => {
               </span>
             </div>
 
-            {/* FAILURE TYPE CONTROL SELECTOR FOR SIMULATED FAILURE BUTTON */}
+            {/* Hidden Failure Control Selector (Preserved in code for Demo Failure Button) */}
+            {/* 
             <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200">
               <label className="block text-[11px] font-bold text-amber-900 mb-1.5 uppercase">
                 Failure Simulation Type (For Demo Failure Button)
@@ -306,12 +290,9 @@ export const PaymentPage: React.FC = () => {
                 className="w-full p-2.5 bg-white border border-amber-300 rounded-xl text-xs font-semibold text-slate-800 outline-none"
               >
                 <option value="PAYMENT_DB_TIMEOUT">PAYMENT_DB_TIMEOUT (Database request timed out after 3100ms)</option>
-                <option value="PAYMENT_GATEWAY_TIMEOUT">PAYMENT_GATEWAY_TIMEOUT (Payment gateway connection timed out)</option>
-                <option value="PAYMENT_SERVICE_UNAVAILABLE">PAYMENT_SERVICE_UNAVAILABLE (Payment service unavailable 503)</option>
-                <option value="PAYMENT_DATABASE_ERROR">PAYMENT_DATABASE_ERROR (Database transaction deadlocked)</option>
-                <option value="PAYMENT_RATE_LIMIT">PAYMENT_RATE_LIMIT (Payment rate limit exceeded)</option>
               </select>
-            </div>
+            </div> 
+            */}
 
             {/* TWO PAYMENT BUTTONS AS SPECIFIED IN REQUIREMENTS */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-100">
@@ -321,13 +302,13 @@ export const PaymentPage: React.FC = () => {
                 type="button"
                 onClick={handleNormalPayNow}
                 disabled={loading}
-                className="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition-all"
+                className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition-all"
               >
                 {loading ? `PROCESSING PAYMENT (${countdown}s)...` : 'PAY NOW'}
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              {/* BUTTON 2: Simulate Failure Pay Now */}
+              {/* Preserved Failure Simulation Button (Hidden from UI view)
               <button
                 type="button"
                 onClick={handleSimulatedFailurePayNow}
@@ -337,6 +318,7 @@ export const PaymentPage: React.FC = () => {
                 {loading ? `SIMULATING (${countdown}s)...` : 'PAY NOW — SIMULATE FAILURE'}
                 <AlertTriangle className="w-4 h-4" />
               </button>
+              */}
 
             </div>
 
