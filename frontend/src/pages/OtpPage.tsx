@@ -9,11 +9,12 @@ export const OtpPage: React.FC = () => {
   const { user, pendingUser, confirmOtpSuccess } = useAuth();
   const activeUser = pendingUser || user || { user_id: 'USR-101', mobile: '+91 9876543210' };
 
-  const [otpDigits, setOtpDigits] = useState<string[]>(['1', '2', '3', '4']);
+  // Empty initial state - NO prefilled placeholders
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '']);
   const [timer, setTimer] = useState<number>(45);
   const [canResend, setCanResend] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [info, setInfo] = useState<string>('Telegram Bot OTP code (1234) generated for mobile verification.');
+  const [info, setInfo] = useState<string>('OTP code sent to your Telegram Bot.');
   const [loading, setLoading] = useState<boolean>(false);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -65,7 +66,7 @@ export const OtpPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Invalid OTP code. Please enter 1234.');
+      setError(err.response?.data?.detail || 'Invalid OTP code. Please check your Telegram message.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export const OtpPage: React.FC = () => {
   const handleResend = async () => {
     if (!canResend) return;
     setError('');
-    setInfo('New Telegram Bot OTP code (1234) sent to mobile.');
+    setInfo('New Telegram Bot OTP code sent to your mobile.');
     setTimer(45);
     setCanResend(false);
     try {
@@ -112,7 +113,7 @@ export const OtpPage: React.FC = () => {
           </div>
         )}
 
-        {/* Compact 4-Box Centered OTP Input */}
+        {/* 4 Empty OTP Input Boxes */}
         <form onSubmit={handleVerify} className="mt-6 space-y-5">
           <div className="flex justify-center items-center gap-3">
             {otpDigits.map((digit, index) => (
@@ -124,6 +125,7 @@ export const OtpPage: React.FC = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                placeholder=""
                 className="w-12 h-14 text-center text-2xl font-extrabold bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all outline-none"
               />
             ))}
