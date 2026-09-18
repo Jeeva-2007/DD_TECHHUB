@@ -10,11 +10,12 @@ from app.config import NVIDIA_API_KEY, NVIDIA_MODEL, NVIDIA_BASE_URL
 from app.agent.state import AgentState
 from app.tools.test_tool import test_tool
 from app.tools.capacity_tool import get_otp_capacity, scale_up_otp_capacity, restart_service
+from app.tools.order_recovery_tool import restart_db_connections, inspect_unplaced_paid_orders, place_missing_order
 from app.db.database import log_tool_execution, log_agent_message
 
 logger = logging.getLogger("incident_agent")
 
-tools = [test_tool, get_otp_capacity, scale_up_otp_capacity, restart_service]
+tools = [test_tool, get_otp_capacity, scale_up_otp_capacity, restart_service, restart_db_connections, inspect_unplaced_paid_orders, place_missing_order]
 tools_by_name = {t.name: t for t in tools}
 
 def get_llm():

@@ -2,4 +2,5 @@ frontend : 3000
 backend : 8000
 otp service : 8001
 upi service : 8002
+msg service : 8003
 agent : 9000

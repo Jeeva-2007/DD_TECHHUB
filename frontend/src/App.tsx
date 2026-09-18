@@ -14,6 +14,7 @@ import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { PaymentPage } from './pages/PaymentPage';
 import { OrderSuccessPage } from './pages/OrderSuccessPage';
+import { MyOrdersPage } from './pages/MyOrdersPage';
 import { AdminSimulatorPage } from './pages/AdminSimulatorPage';
 
 export const App: React.FC = () => {
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/payment" element={<PaymentPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route path="/orders" element={<MyOrdersPage />} />
             <Route path="/admin/simulator" element={<AdminSimulatorPage />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

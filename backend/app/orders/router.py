@@ -95,3 +95,26 @@ def get_order(order_id: str, db: Session = Depends(get_db)):
             {"step": "Delivered", "status": "PENDING", "timestamp": "Expected in 2-3 days"}
         ]
     }
+
+@router.get("/user/{user_id}")
+def get_user_orders(user_id: str, db: Session = Depends(get_db)):
+    orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.id.desc()).all()
+    result = []
+    for order in orders:
+        items = db.query(OrderItem).filter(OrderItem.order_id == order.order_id).all()
+        result.append({
+            "order_id": order.order_id,
+            "user_id": order.user_id,
+            "total_amount": order.total_amount,
+            "status": order.status,
+            "created_at": order.created_at.isoformat() if hasattr(order.created_at, "isoformat") else str(order.created_at),
+            "items": [
+                {
+                    "product_id": it.product_id,
+                    "product_name": it.product_name,
+                    "quantity": it.quantity,
+                    "price": it.price
+                } for it in items
+            ]
+        })
+    return {"orders": result}

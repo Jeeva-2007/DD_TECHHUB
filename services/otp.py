@@ -12,13 +12,18 @@ from pydantic import BaseModel
 
 app = FastAPI(title="OTP Service with Capacity, Latency & Crash Simulation")
 
-# Paths
+from dotenv import load_dotenv
+
+# Load environment variables
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=BASE_DIR / ".env")
+load_dotenv(dotenv_path=BASE_DIR / "agent" / ".env")
+
 CONFIG_PATH = BASE_DIR / "capacity_config.json"
 DB_PATH = BASE_DIR / "backend" / "dd_techhub.db"
 
-# Telegram Bot Token
-BOT_TOKEN = "8368143070:AAEVc-Mi_BDypDUMYfqzoRTnRuC6_mJZr6M"
+# Telegram Bot Token from .env
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8368143070:AAEVc-Mi_BDypDUMYfqzoRTnRuC6_mJZr6M")
 
 # Phone number -> Telegram Chat ID
 users = {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, Heart, User, Laptop, Terminal, Menu, X, CheckCircle } from 'lucide-react';
+import { ShoppingBag, Search, Heart, User, Laptop, Terminal, Menu, X, CheckCircle, Package } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -74,13 +74,18 @@ export const Navbar: React.FC = () => {
             </button>
 
             {/* Cart Icon */}
-            <Link to="/cart" className="p-2.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors relative">
+            <Link to="/cart" className="p-2.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors relative" title="Shopping Cart">
               <ShoppingBag className="w-5 h-5" />
               {itemCount > 0 && (
                 <span className="absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white font-bold text-[11px] rounded-full flex items-center justify-center animate-pulse">
                   {itemCount}
                 </span>
               )}
+            </Link>
+
+            {/* My Orders Icon */}
+            <Link to="/orders" className="p-2.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-colors relative" title="My Orders">
+              <Package className="w-5 h-5" />
             </Link>
 
             {/* User Profile Dropdown / Login */}

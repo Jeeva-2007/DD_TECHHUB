@@ -23,10 +23,26 @@ export const PaymentPage: React.FC = () => {
   const [failureType, setFailureType] = useState<string>('PAYMENT_DB_TIMEOUT');
 
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(2);
   const [errorDetails, setErrorDetails] = useState<any>(null);
+
+  const startCountdown = () => {
+    setCountdown(2);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return timer;
+  };
 
   const handleNormalPayNow = async () => {
     setErrorDetails(null);
+    const timer = startCountdown();
     try {
       setLoading(true);
       const res = await paymentService.process({
@@ -43,20 +59,24 @@ export const PaymentPage: React.FC = () => {
         sessionStorage.setItem('notified_phone', res.data.notified_phone || '9080189795');
         sessionStorage.setItem('telegram_sent', res.data.telegram_sent ? 'true' : 'false');
         navigate('/order-success');
+      } else {
+        setErrorDetails(res.data);
       }
     } catch (err: any) {
       console.error(err);
       setErrorDetails({
-        error_code: 'UNEXPECTED_ERROR',
-        error_message: 'An unexpected payment error occurred.'
+        error_code: 'PAYMENT_DB_TIMEOUT',
+        error_message: 'Database request timed out after 2s limit (100% connection pool capacity reached).'
       });
     } finally {
+      clearInterval(timer);
       setLoading(false);
     }
   };
 
   const handleSimulatedFailurePayNow = async () => {
     setErrorDetails(null);
+    const timer = startCountdown();
     try {
       setLoading(true);
       const res = await paymentService.process({
@@ -78,6 +98,7 @@ export const PaymentPage: React.FC = () => {
         error_message: 'Simulated backend service execution error.'
       });
     } finally {
+      clearInterval(timer);
       setLoading(false);
     }
   };
@@ -302,7 +323,7 @@ export const PaymentPage: React.FC = () => {
                 disabled={loading}
                 className="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition-all"
               >
-                {loading ? 'Processing...' : 'PAY NOW'}
+                {loading ? `PROCESSING PAYMENT (${countdown}s)...` : 'PAY NOW'}
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -313,7 +334,7 @@ export const PaymentPage: React.FC = () => {
                 disabled={loading}
                 className="flex-1 py-4 px-6 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs rounded-2xl shadow-xl shadow-rose-500/25 flex items-center justify-center gap-2 transition-all"
               >
-                {loading ? 'Simulating...' : 'PAY NOW — SIMULATE FAILURE'}
+                {loading ? `SIMULATING (${countdown}s)...` : 'PAY NOW — SIMULATE FAILURE'}
                 <AlertTriangle className="w-4 h-4" />
               </button>
 
