@@ -59,10 +59,12 @@ export const Navbar: React.FC = () => {
             <Link to="/products" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
               Products
             </Link>
+            {/* Preserved Failure Simulator link (Hidden from UI view)
             <Link to="/admin/simulator" className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 transition-all">
               <Terminal className="w-3.5 h-3.5 text-blue-600" />
               Failure Simulator
-            </Link>
+            </Link> 
+            */}
           </div>
 
           {/* Right Action Icons */}
@@ -160,9 +162,11 @@ export const Navbar: React.FC = () => {
             <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-slate-800">
               Products
             </Link>
+            {/* Preserved mobile Failure Simulator link
             <Link to="/admin/simulator" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-blue-600">
               Failure Simulator
             </Link>
+            */}
           </div>
         )}
       </div>
