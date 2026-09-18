@@ -1,5 +1,5 @@
 {
-  "otp_max_capacity": 1,
+  "otp_max_capacity": 5,
   "current_user_count": 1,
   "simulate_latency_seconds": 3.0,
   "is_crashed": false,
