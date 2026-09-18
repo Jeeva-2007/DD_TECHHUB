@@ -54,7 +54,7 @@ def send_otp(req: OtpSendRequest, db: Session = Depends(get_db)):
             }
         )
         
-        with urllib.request.urlopen(http_req, timeout=5.0) as resp:
+        with urllib.request.urlopen(http_req, timeout=15.0) as resp:
             resp_body = resp.read().decode('utf-8')
             telegram_api_response = json.loads(resp_body)
 
@@ -105,6 +105,9 @@ def send_otp(req: OtpSendRequest, db: Session = Depends(get_db)):
     )
 
     active_code = VALID_OTPS.get(req.user_id, "1234")
+
+    if telegram_status == "FAILED":
+        raise HTTPException(status_code=503, detail=error_msg or "Telegram OTP service is unavailable.")
 
     return {
         "success": True,
