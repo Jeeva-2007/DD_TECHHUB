@@ -166,14 +166,14 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
             print(f"[TOOL] Error inserting recovered order to DB: {e}")
             return f"Error placing order: {e}"
 
-    # Call msg service to notify user via Telegram
-    apology_message = (
-        f"🙏 Apologies for the brief delay!\n\n"
-        f"Your payment of ₹{amount:.2f} was verified and your order **{order_id}** "
-        f"has been successfully placed by our AI Incident Agent!\n\n"
-        f"📦 Status: CONFIRMED (AI RECOVERED)\n"
-        f"💻 Item: {product_name}\n\n"
-        f"View your order history under 'My Orders' on DD TECHHUB."
+    # Professional notification message without emojis or informal wording
+    recovery_notification_message = (
+        f"Official Order Confirmation & Payment Settlement Notice\n\n"
+        f"Your payment of INR {amount:,.2f} has been verified and confirmed. "
+        f"Order reference {order_id} has been processed and placed successfully by the AI Incident Management System.\n\n"
+        f"Order Status: CONFIRMED\n"
+        f"Item Fulfilling: {product_name}\n\n"
+        f"You can track your order status under 'My Orders' on DD TECHHUB."
     )
 
     msg_sent = False
@@ -181,10 +181,10 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
     try:
         clean_mobile = "".join([c for c in str(mobile) if c.isdigit()])[-10:] or "9080189795"
         target_msg_url = f"{MSG_SERVICE_URL}/{clean_mobile}"
-        res = requests.post(target_msg_url, json={"message": apology_message}, timeout=5)
+        res = requests.post(target_msg_url, json={"message": recovery_notification_message}, timeout=5)
         if res.status_code == 200:
             msg_sent = True
-            print(f"[TOOL] Apology notification successfully sent via msg-service to {clean_mobile}!")
+            print(f"[TOOL] Order recovery notification successfully sent via msg-service to {clean_mobile}!")
     except Exception as e:
         print(f"[TOOL] Local msg service unreachable ({e}). Attempting direct Telegram fallback...")
 
@@ -204,10 +204,10 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
             chat_id = users.get(clean_digits, users.get("9080189795", "6628696377"))
             
             tg_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            tg_res = requests.post(tg_url, data={"chat_id": chat_id, "text": apology_message}, timeout=5)
+            tg_res = requests.post(tg_url, data={"chat_id": chat_id, "text": recovery_notification_message}, timeout=5)
             if tg_res.status_code == 200:
                 msg_sent = True
-                print(f"[TOOL] Direct Telegram apology notification sent to target user (Mobile: {clean_digits}, Chat ID: {chat_id})!")
+                print(f"[TOOL] Direct Telegram order recovery notification sent to target user (Mobile: {clean_digits}, Chat ID: {chat_id})!")
         except Exception as fallback_err:
             print(f"[TOOL] Direct Telegram API fallback failed: {fallback_err}")
 
