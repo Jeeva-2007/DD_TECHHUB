@@ -106,6 +106,9 @@ def send_otp(req: OtpSendRequest, db: Session = Depends(get_db)):
 
     active_code = VALID_OTPS.get(req.user_id, "1234")
 
+    if telegram_status == "FAILED":
+        raise HTTPException(status_code=503, detail=error_msg or "Telegram OTP service is unavailable.")
+
     return {
         "success": True,
         "message": f"OTP dispatch attempt via Telegram Bot to {clean_mobile}",

@@ -10,7 +10,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI(title="OTP Service with Capacity & Latency Simulation")
+app = FastAPI(title="OTP Service with Capacity, Latency & Crash Simulation")
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,10 +33,11 @@ class ConfigUpdateRequest(BaseModel):
     otp_max_capacity: int = None
     current_user_count: int = None
     simulate_latency_seconds: float = None
+    is_crashed: bool = None
 
 def get_capacity_config() -> dict:
     if not CONFIG_PATH.exists():
-        default_config = {"otp_max_capacity": 1, "current_user_count": 0, "simulate_latency_seconds": 3.0}
+        default_config = {"otp_max_capacity": 1, "current_user_count": 0, "simulate_latency_seconds": 3.0, "is_crashed": False}
         with open(CONFIG_PATH, "w") as f:
             json.dump(default_config, f, indent=2)
         return default_config
@@ -94,9 +95,10 @@ def log_operational_event(
                 pass
             
             # Fallback direct call to Agent on Port 9000 (and Port 8000)
+            action_hint = "Call restart_service tool to bring the service back online." if event_type == "SERVICE_CRASHED" else "Inspect capacity with get_otp_capacity tool and scale up capacity with scale_up_otp_capacity tool."
             agent_payload = {
                 "incident_id": f"INC-OTP-{uuid.uuid4().hex[:4]}",
-                "prompt": f"ALERT DETECTED on 'otp-service': Alert Type '{event_type}' ({error_code}). Message: '{error_message}'. Inspect current capacity with get_otp_capacity tool and scale up capacity with scale_up_otp_capacity tool."
+                "prompt": f"ALERT DETECTED on 'otp-service': Alert Type '{event_type}' ({error_code}). Message: '{error_message}'. {action_hint}"
             }
             for agent_url in ["http://localhost:9000/agent/run", "http://localhost:8000/agent/run"]:
                 try:
@@ -126,12 +128,22 @@ def send_telegram_message(chat_id, otp):
 
 @app.get("/health")
 def health_check():
-    """Health check endpoint showing capacity, user count, and performance state."""
+    """Health check endpoint showing capacity, user count, crash state, and performance state."""
     config = get_capacity_config()
+    is_crashed = config.get("is_crashed", False)
     max_cap = config.get("otp_max_capacity", 1)
     current = config.get("current_user_count", 0)
     latency = config.get("simulate_latency_seconds", 3.0)
     
+    if is_crashed:
+        return {
+            "service": "otp-service",
+            "status": "crashed",
+            "error_code": "OTP_SERVICE_500_CRASH",
+            "message": "OTP service is CRASHED and unresponsive.",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
     is_degraded = current >= max_cap
     return {
         "service": "otp-service",
@@ -140,6 +152,7 @@ def health_check():
         "otp_max_capacity": max_cap,
         "simulate_latency_seconds": latency,
         "latency_active": is_degraded,
+        "is_crashed": False,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -156,6 +169,8 @@ def update_config(req: ConfigUpdateRequest):
         config["current_user_count"] = req.current_user_count
     if req.simulate_latency_seconds is not None:
         config["simulate_latency_seconds"] = req.simulate_latency_seconds
+    if req.is_crashed is not None:
+        config["is_crashed"] = req.is_crashed
     save_capacity_config(config)
     return {"message": "Config updated successfully", "config": config}
 
@@ -165,16 +180,38 @@ def send_otp(request: OTPRequest):
     phone_number = request.phone_number
     
     config = get_capacity_config()
+    is_crashed = config.get("is_crashed", False)
+
+    # 1. CRASH SIMULATION CHECK
+    if is_crashed:
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        error_msg = "CRITICAL: OTP service has CRASHED and is completely unresponsive."
+        print(f"[SERVICE CRASHED] is_crashed is True! Returning 500 error and triggering alert...")
+        
+        log_operational_event(
+            event_type="SERVICE_CRASHED",
+            status="FAILED",
+            severity="CRITICAL",
+            response_time_ms=elapsed_ms,
+            error_code="OTP_SERVICE_500_CRASH",
+            error_message=error_msg
+        )
+        return {
+            "status": "failed",
+            "error_code": "OTP_SERVICE_500_CRASH",
+            "message": error_msg,
+            "response_time_ms": elapsed_ms
+        }
+
     max_capacity = config.get("otp_max_capacity", 1)
     current_users = config.get("current_user_count", 0)
     latency_sec = config.get("simulate_latency_seconds", 3.0)
 
-    # Check if capacity threshold reached -> apply latency effect to user
+    # 2. CAPACITY & LATENCY CHECK
     if current_users >= max_capacity:
         print(f"[LATENCY ALERT] Reached/Exceeded capacity limit ({current_users} >= {max_capacity}). Applying {latency_sec}s latency...")
         time.sleep(latency_sec)
         
-        # If strictly higher than capacity, reject with overload error
         if current_users > max_capacity:
             elapsed_ms = int((time.time() - start_time) * 1000)
             error_msg = f"CRITICAL: OTP service capacity exceeded (Current: {current_users}, Max: {max_capacity}). Severe performance degradation."
@@ -195,7 +232,6 @@ def send_otp(request: OTPRequest):
                 "response_time_ms": elapsed_ms
             }
         else:
-            # Reached max capacity: high latency alert logged
             elapsed_ms = int((time.time() - start_time) * 1000)
             log_operational_event(
                 event_type="OTP_HIGH_LATENCY_ALERT",
