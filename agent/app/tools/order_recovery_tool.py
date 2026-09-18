@@ -75,11 +75,12 @@ def inspect_unplaced_paid_orders() -> str:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        # Query payments or operational events for failed order attempts
+        # Query payments or operational events for failed order attempts along with customer mobile number
         cursor.execute("""
-            SELECT p.payment_id, p.order_id, p.user_id, p.amount, p.status, p.created_at
+            SELECT p.payment_id, p.order_id, p.user_id, u.mobile, p.amount, p.status, p.created_at
             FROM payments p
             LEFT JOIN orders o ON p.order_id = o.order_id
+            LEFT JOIN users u ON p.user_id = u.user_id
             WHERE o.order_id IS NULL OR p.status = 'FAILED'
             ORDER BY p.id DESC LIMIT 5
         """)
@@ -101,8 +102,22 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
     """Places a missing customer order in the database for a user whose payment succeeded during a database connection timeout.
     Updates order and order_items tables, and triggers an apology notification to the user via Telegram messaging service.
     """
-    print(f"[TOOL] place_missing_order called for user_id='{user_id}', amount={amount}")
-    logger.info(f"[TOOL] place_missing_order called for user_id='{user_id}', amount={amount}")
+    print(f"[TOOL] place_missing_order called for user_id='{user_id}', amount={amount}, mobile='{mobile}'")
+    logger.info(f"[TOOL] place_missing_order called for user_id='{user_id}', amount={amount}, mobile='{mobile}'")
+
+    # If mobile is default or not explicitly provided, query DB for user's registered mobile number!
+    if DB_PATH.exists() and (mobile == "9080189795" or not mobile):
+        try:
+            conn_u = sqlite3.connect(DB_PATH)
+            cursor_u = conn_u.cursor()
+            cursor_u.execute("SELECT mobile FROM users WHERE user_id = ?", (user_id,))
+            u_row = cursor_u.fetchone()
+            if u_row and u_row[0]:
+                mobile = u_row[0]
+                print(f"[TOOL] Looked up user '{user_id}' registered mobile: {mobile}")
+            conn_u.close()
+        except Exception as u_err:
+            print(f"[TOOL] Failed to lookup user mobile: {u_err}")
 
     order_id = f"ORD-AI-{uuid.uuid4().hex[:6].upper()}"
     payment_id = f"PAY-AI-{uuid.uuid4().hex[:6].upper()}"
@@ -151,22 +166,25 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
             print(f"[TOOL] Error inserting recovered order to DB: {e}")
             return f"Error placing order: {e}"
 
-    # Call msg service to notify user via Telegram
-    apology_message = (
-        f"🙏 Apologies for the brief delay!\n\n"
-        f"Your payment of ₹{amount:.2f} was verified and your order **{order_id}** "
-        f"has been successfully placed by our AI Incident Agent!\n\n"
-        f"📦 Status: CONFIRMED (AI RECOVERED)\n"
-        f"💻 Item: {product_name}\n\n"
-        f"View your order history under 'My Orders' on DD TECHHUB."
+    # Professional notification message without emojis or informal wording
+    recovery_notification_message = (
+        f"Official Order Confirmation & Payment Settlement Notice\n\n"
+        f"Your payment of INR {amount:,.2f} has been verified and confirmed. "
+        f"Order reference {order_id} has been processed and placed successfully by the AI Incident Management System.\n\n"
+        f"Order Status: CONFIRMED\n"
+        f"Item Fulfilling: {product_name}\n\n"
+        f"You can track your order status under 'My Orders' on DD TECHHUB."
     )
 
     msg_sent = False
-    # Attempt 1: Try local msg service on port 8003
+    # Attempt 1: Try local msg service POST /send-message/{phone_number} on port 8003
     try:
-        res = requests.post(MSG_SERVICE_URL, json={"phone_number": mobile, "message": apology_message}, timeout=5)
+        clean_mobile = "".join([c for c in str(mobile) if c.isdigit()])[-10:] or "9080189795"
+        target_msg_url = f"{MSG_SERVICE_URL}/{clean_mobile}"
+        res = requests.post(target_msg_url, json={"message": recovery_notification_message}, timeout=5)
         if res.status_code == 200:
             msg_sent = True
+            print(f"[TOOL] Order recovery notification successfully sent via msg-service to {clean_mobile}!")
     except Exception as e:
         print(f"[TOOL] Local msg service unreachable ({e}). Attempting direct Telegram fallback...")
 
@@ -181,14 +199,15 @@ def place_missing_order(user_id: str, amount: float, product_name: str = "Premiu
             bot_token = os.getenv("BOT_TOKEN", "8368143070:AAEVc-Mi_BDypDUMYfqzoRTnRuC6_mJZr6M")
             users = {"9080189795": "6628696377", "9944393239": "8176005834"}
             
-            # Broadcast to all registered user chat IDs to guarantee delivery
-            target_chat_ids = list(set(users.values()))
-            for cid in target_chat_ids:
-                tg_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-                tg_res = requests.post(tg_url, data={"chat_id": cid, "text": apology_message}, timeout=5)
-                if tg_res.status_code == 200:
-                    msg_sent = True
-                    print(f"[TOOL] Direct Telegram apology notification dispatched successfully to Chat ID {cid}!")
+            # Map mobile number to target customer's Telegram chat ID
+            clean_digits = "".join([c for c in str(mobile) if c.isdigit()])[-10:]
+            chat_id = users.get(clean_digits, users.get("9080189795", "6628696377"))
+            
+            tg_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+            tg_res = requests.post(tg_url, data={"chat_id": chat_id, "text": recovery_notification_message}, timeout=5)
+            if tg_res.status_code == 200:
+                msg_sent = True
+                print(f"[TOOL] Direct Telegram order recovery notification sent to target user (Mobile: {clean_digits}, Chat ID: {chat_id})!")
         except Exception as fallback_err:
             print(f"[TOOL] Direct Telegram API fallback failed: {fallback_err}")
 

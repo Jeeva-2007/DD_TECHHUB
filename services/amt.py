@@ -47,9 +47,10 @@ def generate_payment_reference():
 def send_telegram_message(chat_id, order_ref, payment_ref, amount, timeout_sec=2.0):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     message = (
-        f"🛒 Order Reference: {order_ref}\n"
-        f"💳 Payment Reference: {payment_ref}\n"
-        f"💰 Total Amount: ₹{amount:.2f}"
+        f"Payment Dispatch Notification\n\n"
+        f"Order Reference: {order_ref}\n"
+        f"Payment Reference: {payment_ref}\n"
+        f"Total Amount: INR {amount:,.2f}"
     )
     data = {
         "chat_id": chat_id,
