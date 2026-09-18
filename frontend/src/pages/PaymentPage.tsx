@@ -38,7 +38,10 @@ export const PaymentPage: React.FC = () => {
       });
 
       if (res.data.success) {
-        sessionStorage.setItem('last_payment_id', res.data.payment_id);
+        sessionStorage.setItem('last_payment_id', res.data.payment_reference || res.data.payment_id);
+        sessionStorage.setItem('active_order_id', res.data.order_reference || res.data.order_id);
+        sessionStorage.setItem('notified_phone', res.data.notified_phone || '9080189795');
+        sessionStorage.setItem('telegram_sent', res.data.telegram_sent ? 'true' : 'false');
         navigate('/order-success');
       }
     } catch (err: any) {

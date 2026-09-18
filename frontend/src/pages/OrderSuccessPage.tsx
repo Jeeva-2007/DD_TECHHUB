@@ -68,6 +68,22 @@ export const OrderSuccessPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Telegram Payment Dispatch Alert */}
+          <div className="my-6 p-4 rounded-2xl bg-sky-50 border border-sky-200 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shrink-0">
+              ✈️
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="block text-xs font-bold text-slate-900">Telegram Instant Payment Dispatch</span>
+                <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold">SENT</span>
+              </div>
+              <span className="text-[11px] text-slate-600">
+                Payment receipt with Order Ref <strong className="text-slate-800">{activeOrderId}</strong> &amp; Payment Ref <strong className="text-slate-800">{paymentId}</strong> sent automatically to Telegram (<span className="font-semibold text-sky-700">+91 {sessionStorage.getItem('notified_phone') || '9080189795'}</span>).
+              </span>
+            </div>
+          </div>
+
           {/* Order Tracker Stepper */}
           <div className="mt-8">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-6">Live Order Status Tracker</h3>

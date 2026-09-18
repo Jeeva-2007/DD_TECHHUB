@@ -8,7 +8,7 @@ export const SplashScreen: React.FC = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/login');
+      navigate('/home');
     }, 2800);
     return () => clearTimeout(timer);
   }, [navigate]);
