@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-20">
           
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/home" className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
               <Laptop className="w-6 h-6" />
             </div>
@@ -53,7 +53,7 @@ export const Navbar: React.FC = () => {
 
           {/* Navigation Links & Actions */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link to="/" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
+            <Link to="/home" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
               Home
             </Link>
             <Link to="/products" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
@@ -149,7 +149,7 @@ export const Navbar: React.FC = () => {
               />
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </form>
-            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-slate-800">
+            <Link to="/home" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-slate-800">
               Home
             </Link>
             <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-sm font-semibold text-slate-800">

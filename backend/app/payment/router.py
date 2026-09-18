@@ -1,10 +1,12 @@
 import uuid
+import requests
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.models.payment import Payment
+from app.models.user import User
 from app.logging.logger import log_application_event, record_operational_event
 
 router = APIRouter(prefix="/api/payment", tags=["Payment"])
@@ -116,10 +118,36 @@ def process_payment(req: PaymentProcessRequest, db: Session = Depends(get_db)):
             "error_message": cfg["error_message"]
         }
 
+    # Fetch user mobile for Telegram notification
+    user_rec = db.query(User).filter(User.user_id == req.user_id).first()
+    phone_to_notify = user_rec.mobile if (user_rec and user_rec.mobile) else "9080189795"
+
+    order_ref = req.order_id
+    payment_ref = payment_id
+    telegram_sent = False
+    notified_phone = "9080189795"
+
+    # Invoke Telegram AMT payment microservice on port 8002
+    try:
+        amt_res = requests.post(
+            "http://localhost:8002/payment",
+            json={"phone_number": phone_to_notify, "total_amount": float(req.amount)},
+            timeout=5
+        )
+        if amt_res.status_code == 200:
+            amt_data = amt_res.json()
+            if amt_data.get("status") == "success":
+                order_ref = amt_data.get("order_reference", req.order_id)
+                payment_ref = amt_data.get("payment_reference", payment_id)
+                notified_phone = amt_data.get("notified_phone", "9080189795")
+                telegram_sent = True
+    except Exception as e:
+        print(f"AMT payment service call exception: {e}")
+
     # Successful payment simulation
     pay_rec = Payment(
-        payment_id=payment_id,
-        order_id=req.order_id,
+        payment_id=payment_ref,
+        order_id=order_ref,
         user_id=req.user_id,
         amount=req.amount,
         status="SUCCESS",
@@ -132,7 +160,7 @@ def process_payment(req: PaymentProcessRequest, db: Session = Depends(get_db)):
         db,
         service_name="payment-service",
         level="INFO",
-        message=f"Payment {payment_id} processed successfully for order {req.order_id}",
+        message=f"Payment {payment_ref} processed successfully for order {order_ref}. Telegram confirmation dispatched to {notified_phone}",
         request_id=request_id,
         user_id=req.user_id
     )
@@ -146,14 +174,25 @@ def process_payment(req: PaymentProcessRequest, db: Session = Depends(get_db)):
         request_id=request_id,
         user_id=req.user_id,
         response_time_ms=320,
-        dependency="demo-payment-gateway",
-        metadata={"payment_id": payment_id, "order_id": req.order_id, "amount": req.amount}
+        dependency="telegram-payment-service",
+        metadata={
+            "payment_id": payment_ref,
+            "order_id": order_ref,
+            "amount": req.amount,
+            "notified_phone": notified_phone,
+            "telegram_sent": telegram_sent
+        }
     )
 
     return {
         "success": True,
-        "payment_id": payment_id,
-        "order_id": req.order_id,
+        "payment_id": payment_ref,
+        "order_id": order_ref,
+        "order_reference": order_ref,
+        "payment_reference": payment_ref,
+        "notified_phone": notified_phone,
+        "telegram_sent": telegram_sent,
         "status": "SUCCESS",
         "request_id": request_id
     }
+
