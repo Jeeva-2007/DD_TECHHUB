@@ -1,0 +1,5 @@
+{
+  "otp_max_capacity": 10,
+  "current_user_count": 1,
+  "simulate_latency_seconds": 3.0
+}
