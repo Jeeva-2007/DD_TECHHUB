@@ -73,3 +73,12 @@ export const monitoringService = {
   getLogs: (params?: any) => api.get('/api/logs', { params }),
   getEvents: (params?: any) => api.get('/api/events', { params }),
 };
+
+export const agentService = {
+  run: (data: { incident_id: string; prompt: string }) =>
+    axios.post('http://localhost:8003/agent/run', data).catch(() =>
+      api.post('/api/simulator/payment/database-timeout?user_id=USR-DEMO')
+    ),
+  getIncident: (incident_id: string) =>
+    axios.get(`http://localhost:8003/incidents/${incident_id}`).catch(() => ({ data: null })),
+};

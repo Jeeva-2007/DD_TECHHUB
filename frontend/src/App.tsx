@@ -16,6 +16,7 @@ import { PaymentPage } from './pages/PaymentPage';
 import { OrderSuccessPage } from './pages/OrderSuccessPage';
 import { MyOrdersPage } from './pages/MyOrdersPage';
 import { AdminSimulatorPage } from './pages/AdminSimulatorPage';
+import { AgentDashboardPage } from '../../agent/frontend/src/pages/AgentDashboardPage';
 
 export const App: React.FC = () => {
   return (
@@ -36,6 +37,8 @@ export const App: React.FC = () => {
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/orders" element={<MyOrdersPage />} />
             <Route path="/admin/simulator" element={<AdminSimulatorPage />} />
+            <Route path="/agent/*" element={<AgentDashboardPage />} />
+            <Route path="/agent" element={<AgentDashboardPage />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </BrowserRouter>

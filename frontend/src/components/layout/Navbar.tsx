@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, Heart, User, Laptop, Terminal, Menu, X, CheckCircle, Package } from 'lucide-react';
+import { ShoppingBag, Search, Heart, User, Laptop, Terminal, Menu, X, CheckCircle, Package, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -52,12 +52,16 @@ export const Navbar: React.FC = () => {
           </form>
 
           {/* Navigation Links & Actions */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-4">
             <Link to="/home" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
               Home
             </Link>
             <Link to="/products" className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
               Products
+            </Link>
+            <Link to="/agent" className="flex items-center gap-1.5 text-xs font-extrabold px-3 py-1.5 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow-xs transition-all">
+              <Sparkles className="w-3.5 h-3.5" />
+              AI Agent Ops
             </Link>
             <Link to="/admin/simulator" className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200 transition-all">
               <Terminal className="w-3.5 h-3.5 text-blue-600" />
