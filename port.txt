@@ -1,4 +1,5 @@
 frontend : 3000
 backend : 8000
 otp service : 8001
+upi service : 8002
 agent : 9000
