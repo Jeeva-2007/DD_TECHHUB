@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+}
+
+.glow-blue {
+  box-shadow: 0 0 35px -5px rgba(37, 99, 235, 0.25);
+}
+
+.glow-blue-sm {
+  box-shadow: 0 0 15px 0px rgba(37, 99, 235, 0.15);
+}
